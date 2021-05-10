@@ -1,6 +1,3 @@
-#![feature(fnbox)]
-
-use std::boxed::FnBox;
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -19,7 +16,7 @@ impl Drop for Worker {
 }
 
 enum Job {
-    NewJob(Box<FnBox() + Send>),
+    NewJob(Box<dyn FnOnce() + Send>),
     Terminate,
 }
 
@@ -41,7 +38,7 @@ impl ThreadPool {
                 thread: Some(thread::spawn(move || loop {
                     let msg = receiver.lock().unwrap().recv().unwrap();
                     match msg {
-                        Job::NewJob(f) => f.call_box(()),
+                        Job::NewJob(f) => f(),
                         Job::Terminate => break,
                     }
                 })),
@@ -65,13 +62,5 @@ impl Drop for ThreadPool {
             self.sender.send(Job::Terminate).unwrap()
         }
         self.workers.clear();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }

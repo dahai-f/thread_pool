@@ -56,6 +56,12 @@ impl ThreadPool {
     }
 }
 
+impl Default for ThreadPool {
+    fn default() -> Self {
+        Self::new(num_cpus::get() * 2)
+    }
+}
+
 impl Drop for ThreadPool {
     fn drop(&mut self) {
         for _ in 0..self.workers.len() {

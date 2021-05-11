@@ -25,6 +25,8 @@ pub struct ThreadPool {
     workers: Vec<Worker>,
 }
 
+unsafe impl Sync for ThreadPool {}
+
 impl ThreadPool {
     pub fn new(thread_num: usize) -> ThreadPool {
         let mut workers = Vec::with_capacity(thread_num);
@@ -48,7 +50,7 @@ impl ThreadPool {
         ThreadPool { sender, workers }
     }
 
-    pub fn execute<F>(&self, f: F)
+    pub fn execute<F>(&mut self, f: F)
     where
         F: FnOnce() + Send + 'static,
     {
